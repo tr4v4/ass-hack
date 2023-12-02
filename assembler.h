@@ -1,2 +1,2 @@
 #include <stdio.h>
-void assemble(FILE *in);
+void assemble(FILE *in, char fname[]);

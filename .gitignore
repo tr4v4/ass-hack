@@ -1,3 +1,4 @@
 a.out
 .vscode
 .clang-format
+*.hack
