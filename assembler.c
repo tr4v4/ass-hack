@@ -45,6 +45,22 @@ int identify_instruction(char instruction[]) {
     return 2;
 }
 
+void add_n_zeros(char src[], char dest[], int n) {
+    // Inserisco n zeri in dest
+    int dest_index = 0;
+    for (dest_index; dest_index < n; dest_index++) dest[dest_index] = '0';
+
+    // Inserisco ogni cifra di src in dest
+    int src_index = 0;
+    while (dest_index < MAX_VALUE_LENGTH && src[src_index] != '\0') {
+        dest[dest_index] = src[src_index];
+        dest_index++;
+        src_index++;
+    }
+
+    dest[dest_index] = '\0';
+}
+
 A_instruction *parse_A_instruction(char instruction[]) {
     A_instruction *a = (A_instruction *)malloc(sizeof(A_instruction));
 
@@ -65,20 +81,28 @@ A_instruction *parse_A_instruction(char instruction[]) {
         return NULL;
     else {
         // Converti in binario il numero
-        int bin_digits;
-        long int bin = dec_to_bin(dec, &bin_digits);
+        long int bin = dec_to_bin(dec);
 
         // Riconverti in stringa il numero binario
-        char sbin[MAX_VALUE_LENGTH] = itoa(bin);
+        char sbin[MAX_VALUE_LENGTH];
+        sprintf(sbin, "%ld", bin);
 
         // Aggiungi gli 0 mancanti
-        add_n_zeros(sbin, MAX_VALUE_LENGTH - bin_digits);
+        char sbin_complete[MAX_VALUE_LENGTH];
+        add_n_zeros(sbin, sbin_complete, MAX_VALUE_LENGTH - strlen(sbin));
 
         // Copia il numero binario nella A-instruction
-        strncpy(a->value, sbin, MAX_VALUE_LENGTH);
+        strncpy(a->value, sbin_complete, MAX_VALUE_LENGTH);
 
         return a;
     }
+}
+
+void convert_A_instruction(char sbin[], A_instruction *a) {
+    sbin[0] = '0';
+    for (int i = 0; i < MAX_VALUE_LENGTH; i++) sbin[i + 1] = a->value[i];
+    sbin[BINARY_INSTRUCTION_LENGTH] = '\0';
+    printf("%s\n", sbin);
 }
 
 C_instruction *parse_C_instruction(char instruction[]) {
@@ -109,21 +133,21 @@ void assemble(FILE *fin, char fname[]) {
 
             // Considero solo A-instruction e C-instruction
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
-            switch (type) {
-                case 1:
-                    A_instruction *a_in = parse_A_instruction(instruction);
-                    convert_A_instruction(binary_instruction, a_in);
-                    break;
-                case 2:
-                    C_instruction *c_in = parse_C_instruction(instruction);
-                    convert_C_instruction(binary_instruction, c_in);
-                    break;
+            if (type == 1) {
+                A_instruction *a_in = parse_A_instruction(instruction);
+                convert_A_instruction(binary_instruction, a_in);
+            } else if (type == 2) {
+                // C_instruction *c_in = parse_C_instruction(instruction);
+                // convert_C_instruction(binary_instruction, c_in);
             }
 
-            // Scrivo l'istruzione in binario nel file di output
-            fputs(binary_instruction, fout);
+            if (type == 1) {
+                // Scrivo l'istruzione in binario nel file di output
+                fputs(binary_instruction, fout);
+                fputs("\n", fout);
+            }
 
-            printf("%s\t%d\n", instruction, type);
+            // printf("%s\t%d\n", instruction, type);
         }
     }
 
