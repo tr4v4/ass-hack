@@ -1,2 +1,2 @@
-#include <stdio.h>
+#include "tools.h"
 void assemble(FILE *in, char fname[]);

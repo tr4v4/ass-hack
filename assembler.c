@@ -1,14 +1,17 @@
 #include "assembler.h"
 
+#include "tools.h"
+
 const int MAX_LINE_LENGTH = 100;
 const int MAX_INSTRUCTION_LENGTH = 10;
+const int MAX_VALUE_LENGTH = 15;
 const int MAX_DEST_LENGTH = 3;
 const int MAX_COMP_LENGTH = 3;
 const int MAX_JMP_LENGTH = 3;
 const int BINARY_INSTRUCTION_LENGTH = 16;
 
 typedef struct A_instruction {
-    int value;
+    char value[MAX_VALUE_LENGTH];
 } A_instruction;
 
 typedef struct C_instruction {
@@ -44,8 +47,38 @@ int identify_instruction(char instruction[]) {
 
 A_instruction *parse_A_instruction(char instruction[]) {
     A_instruction *a = (A_instruction *)malloc(sizeof(A_instruction));
-    // TODO
-    return a;
+
+    // Elimina la chiocciola (primo carattere) dall'istruzione
+    char instruction_no_at[MAX_INSTRUCTION_LENGTH];
+    int index_no_at = 0;
+    while (instruction[index_no_at + 1] != '\0') {
+        instruction_no_at[index_no_at] = instruction[index_no_at + 1];
+        index_no_at++;
+    }
+    instruction_no_at[index_no_at] = '\0';
+
+    // Converti in intero la stringa
+    int dec = atoi(instruction_no_at);
+
+    // Attenzione: il numero non può essere maggiore di (2^15) - 1
+    if (dec > 32767)
+        return NULL;
+    else {
+        // Converti in binario il numero
+        int bin_digits;
+        long int bin = dec_to_bin(dec, &bin_digits);
+
+        // Riconverti in stringa il numero binario
+        char sbin[MAX_VALUE_LENGTH] = itoa(bin);
+
+        // Aggiungi gli 0 mancanti
+        add_n_zeros(sbin, MAX_VALUE_LENGTH - bin_digits);
+
+        // Copia il numero binario nella A-instruction
+        strncpy(a->value, sbin, MAX_VALUE_LENGTH);
+
+        return a;
+    }
 }
 
 C_instruction *parse_C_instruction(char instruction[]) {
@@ -76,12 +109,15 @@ void assemble(FILE *fin, char fname[]) {
 
             // Considero solo A-instruction e C-instruction
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
-            if (type == 1) {
-                A_instruction *a_in = parse_A_instruction(instruction);
-                convert_A_instruction(binary_instruction, a_in);
-            } else if (type == 2) {
-                C_instruction *c_in = parse_C_instruction(instruction);
-                convert_C_instruction(binary_instruction, c_in);
+            switch (type) {
+                case 1:
+                    A_instruction *a_in = parse_A_instruction(instruction);
+                    convert_A_instruction(binary_instruction, a_in);
+                    break;
+                case 2:
+                    C_instruction *c_in = parse_C_instruction(instruction);
+                    convert_C_instruction(binary_instruction, c_in);
+                    break;
             }
 
             // Scrivo l'istruzione in binario nel file di output

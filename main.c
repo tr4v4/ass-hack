@@ -1,22 +1,7 @@
 #include "assembler.h"
+#include "tools.h"
 
 const int MAX_FNAME_LENGTH = 20;
-
-int strlen(char str[]) {
-    int index = 0;
-    while (str[index] != '\0') index++;
-    return index;
-}
-
-void strncpy(char dest[], char src[], int max_index) {
-    // Precondition: max_index < get_str_len(src)
-    int index = 0;
-    while (index < max_index) {
-        dest[index] = src[index];
-        index++;
-    }
-    dest[index] = '\0';
-}
 
 int main(int argc, char *argv[]) {
     // Verifico il numero di argomenti (argc >= 2)
