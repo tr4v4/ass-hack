@@ -1,5 +1,4 @@
 #include "assembler.h"
-
 #include "tools.h"
 
 const int MAX_LINE_LENGTH = 100;
@@ -24,7 +23,7 @@ void clear_line(char line[], char instruction[]) {
     int line_index = 0;
     int instruction_index = 0;
 
-    // Inserisco in instruction i caratteri di line eccetto SPACE e TAB
+    // Inserisco in instruction i caratteri di line eccetto SPACE, TAB e '\n'
     while (line[line_index] != '\0' &&
            instruction_index < MAX_INSTRUCTION_LENGTH) {
         if (line[line_index] != ' ' && line[line_index] != '\t' &&
@@ -46,13 +45,14 @@ int identify_instruction(char instruction[]) {
 }
 
 void add_n_zeros(char src[], char dest[], int n) {
+    // Precondition: n + strlen(src) = strlen(dest)
     // Inserisco n zeri in dest
     int dest_index = 0;
     for (dest_index; dest_index < n; dest_index++) dest[dest_index] = '0';
 
     // Inserisco ogni cifra di src in dest
     int src_index = 0;
-    while (dest_index < MAX_VALUE_LENGTH && src[src_index] != '\0') {
+    while (src[src_index] != '\0') {
         dest[dest_index] = src[src_index];
         dest_index++;
         src_index++;
@@ -65,7 +65,7 @@ A_instruction *parse_A_instruction(char instruction[]) {
     A_instruction *a = (A_instruction *)malloc(sizeof(A_instruction));
 
     // Elimina la chiocciola (primo carattere) dall'istruzione
-    char instruction_no_at[MAX_INSTRUCTION_LENGTH];
+    char instruction_no_at[MAX_INSTRUCTION_LENGTH + 1];
     int index_no_at = 0;
     while (instruction[index_no_at + 1] != '\0') {
         instruction_no_at[index_no_at] = instruction[index_no_at + 1];
@@ -84,11 +84,11 @@ A_instruction *parse_A_instruction(char instruction[]) {
         long int bin = dec_to_bin(dec);
 
         // Riconverti in stringa il numero binario
-        char sbin[MAX_VALUE_LENGTH];
+        char sbin[MAX_VALUE_LENGTH + 1];
         sprintf(sbin, "%ld", bin);
 
         // Aggiungi gli 0 mancanti
-        char sbin_complete[MAX_VALUE_LENGTH];
+        char sbin_complete[MAX_VALUE_LENGTH + 1];
         add_n_zeros(sbin, sbin_complete, MAX_VALUE_LENGTH - strlen(sbin));
 
         // Copia il numero binario nella A-instruction
@@ -118,7 +118,7 @@ void assemble(FILE *fin, char fname[]) {
 
     // Scorro ogni riga del file di input
     while (!feof(fin)) {
-        char line[MAX_LINE_LENGTH];
+        char line[MAX_LINE_LENGTH + 1];
         fgets(line, MAX_LINE_LENGTH, fin);
 
         if (line[0] != '\n') {
