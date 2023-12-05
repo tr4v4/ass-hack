@@ -2,21 +2,19 @@
 #include "tools.h"
 
 const int MAX_LINE_LENGTH = 100;
-const int MAX_INSTRUCTION_LENGTH = 10;
+const int MAX_INSTRUCTION_LENGTH = 11;
 const int MAX_VALUE_LENGTH = 15;
-const int MAX_DEST_LENGTH = 3;
-const int MAX_COMP_LENGTH = 3;
-const int MAX_JMP_LENGTH = 3;
+const int MAX_C_LENGTH = 3;
 const int BINARY_INSTRUCTION_LENGTH = 16;
 
 typedef struct A_instruction {
-    char value[MAX_VALUE_LENGTH];
+    char value[MAX_VALUE_LENGTH+1];
 } A_instruction;
 
 typedef struct C_instruction {
-    char dest[MAX_DEST_LENGTH];
-    char comp[MAX_COMP_LENGTH];
-    char jmp[MAX_JMP_LENGTH];
+    char dest[MAX_C_LENGTH+1];
+    char comp[MAX_C_LENGTH+1];
+    char jmp[MAX_C_LENGTH+1];
 } C_instruction;
 
 void clear_line(char line[], char instruction[]) {
@@ -107,8 +105,34 @@ void convert_A_instruction(char sbin[], A_instruction *a) {
 
 C_instruction *parse_C_instruction(char instruction[]) {
     C_instruction *c = (C_instruction *)malloc(sizeof(C_instruction));
-    // TODO
+    
+    int eq_index = find_character(instruction, '=');
+    int sc_index = find_character(instruction, ';');
+
+    // Se non è stato trovato né '=' né ';' --> errore
+    if (eq_index == -1 && sc_index == -1) return NULL;
+
+    if (eq_index != -1) {
+        strncpy(c->dest, instruction, eq_index);
+        if (sc_index != -1) {
+            strncpy_range(c->comp, instruction, eq_index+1, sc_index);
+            strncpy_range(c->jmp, instruction, sc_index+1, strlen(instruction));
+        } else {
+            strncpy_range(c->comp, instruction, eq_index+1, strlen(instruction));
+        }
+    } else {
+        strncpy(c->comp, instruction, sc_index);
+        if (sc_index != -1) {
+            strncpy_range(c->jmp, instruction, sc_index+1, strlen(instruction));
+        }
+    }
+
     return c;
+}
+
+void convert_C_instruction(char sbin[], C_instruction *c) {
+    // TODO
+    printf("%s\t%s\t%s\n", c->dest, c->comp, c->jmp);
 }
 
 void assemble(FILE *fin, char fname[]) {
@@ -135,10 +159,11 @@ void assemble(FILE *fin, char fname[]) {
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
             if (type == 1) {
                 A_instruction *a_in = parse_A_instruction(instruction);
+                // TODO: inserire controllo errore valore non valido (a_in = NULL)
                 convert_A_instruction(binary_instruction, a_in);
             } else if (type == 2) {
-                // C_instruction *c_in = parse_C_instruction(instruction);
-                // convert_C_instruction(binary_instruction, c_in);
+                C_instruction *c_in = parse_C_instruction(instruction);
+                convert_C_instruction(binary_instruction, c_in);
             }
 
             if (type == 1) {

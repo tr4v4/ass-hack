@@ -14,3 +14,4 @@
 
 
     M=D
+AMD=D+M;JMP
