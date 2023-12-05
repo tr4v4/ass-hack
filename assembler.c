@@ -163,6 +163,7 @@ void assemble(FILE *fin, char fname[]) {
                 convert_A_instruction(binary_instruction, a_in);
             } else if (type == 2) {
                 C_instruction *c_in = parse_C_instruction(instruction);
+                // TODO: inserire controllo errore valore non valido (c_in = NULL)
                 convert_C_instruction(binary_instruction, c_in);
             }
 
