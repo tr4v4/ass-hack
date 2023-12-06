@@ -120,26 +120,89 @@ C_instruction *parse_C_instruction(char instruction[]) {
             strncpy_range(c->jmp, instruction, sc_index+1, strlen(instruction));
         } else {
             strncpy_range(c->comp, instruction, eq_index+1, strlen(instruction));
+            c->jmp[0] = '\0';
         }
     } else {
-        strncpy(c->comp, instruction, sc_index);
+        strncpy(c->dest, instruction, sc_index);
         if (sc_index != -1) {
             strncpy_range(c->jmp, instruction, sc_index+1, strlen(instruction));
+        } else {
+            c->jmp[0] = '\0';
         }
+        c->comp[0] = '\0';
     }
 
     // Se trovo `M` in c->comp --> c->a = 1, altrimenti c->a = 0
-    if (find_character(c->comp, 'M') != -1)
-        c->a = 1;
-    else
-        c->a = 0;
+    if (find_character(c->comp, 'M') != -1) c->a = '1';
+    else c->a = '0';
 
     return c;
 }
 
 void convert_C_instruction(char sbin[], C_instruction *c) {
-    
-    printf("%d\t%s\t%s\t%s\n", c->a, c->dest, c->comp, c->jmp);
+    printf("%c\t%s\t%s\t%s\n", c->a, c->dest, c->comp, c->jmp);
+
+    // Analizzo c->comp
+    // TODO
+    sbin[4] = '0';
+    sbin[5] = '0';
+    sbin[6] = '0';
+    sbin[7] = '0';
+    sbin[8] = '0';
+    sbin[9] = '0';
+
+    // Analizzo c->jmp
+    if (strncmp(c->jmp, "JGT", MAX_C_LENGTH)) {
+        sbin[13] = '0';
+        sbin[14] = '0';
+        sbin[15] = '1';
+    } else if (strncmp(c->jmp, "JEQ", MAX_C_LENGTH)) {
+        sbin[13] = '0';
+        sbin[14] = '1';
+        sbin[15] = '0';
+    } else if (strncmp(c->jmp, "JGE", MAX_C_LENGTH)) {
+        sbin[13] = '0';
+        sbin[14] = '1';
+        sbin[15] = '1';
+    } else if (strncmp(c->jmp, "JLT", MAX_C_LENGTH)) {
+        sbin[13] = '1';
+        sbin[14] = '0';
+        sbin[15] = '0';
+    } else if (strncmp(c->jmp, "JNE", MAX_C_LENGTH)) {
+        sbin[13] = '1';
+        sbin[14] = '0';
+        sbin[15] = '1';
+    } else if (strncmp(c->jmp, "JLE", MAX_C_LENGTH)) {
+        sbin[13] = '1';
+        sbin[14] = '1';
+        sbin[15] = '0';
+    } else if (strncmp(c->jmp, "JMP", MAX_C_LENGTH)) {
+        sbin[13] = '1';
+        sbin[14] = '1';
+        sbin[15] = '1';
+    } else {
+        sbin[13] = '0';
+        sbin[14] = '0';
+        sbin[15] = '0';
+    }
+
+    // Analizzo c->dest
+    if (find_character(c->dest, 'M') != -1) sbin[12] = '1';
+    else sbin[12] = '0';
+    if (find_character(c->dest, 'D') != -1) sbin[11] = '1';
+    else sbin[11] = '0';
+    if (find_character(c->dest, 'A') != -1) sbin[10] = '1';
+    else sbin[10] = '0';
+
+    // Setto il quarto bit a c->a
+    sbin[3] = c->a;
+
+    // Setto i primi 3 bit a 1
+    sbin[0] = '1';
+    sbin[1] = '1';
+    sbin[2] = '1';
+
+    sbin[BINARY_INSTRUCTION_LENGTH] = '\0';
 }
 
 void assemble(FILE *fin, char fname[]) {
@@ -174,13 +237,11 @@ void assemble(FILE *fin, char fname[]) {
                 convert_C_instruction(binary_instruction, c_in);
             }
 
-            if (type == 1) {
+            if (type == 1 || type == 2) {
                 // Scrivo l'istruzione in binario nel file di output
                 fputs(binary_instruction, fout);
                 fputs("\n", fout);
             }
-
-            // printf("%s\t%d\n", instruction, type);
         }
     }
 

@@ -23,6 +23,16 @@ void strncpy_range(char dest[], char src[], int min_index, int max_index) {
     dest[index] = '\0';
 }
 
+bool strncmp(char a[], char b[], int length) {
+    bool equal = true;
+    int index = 0;
+    while (index < length && equal) {
+        if (a[index] != b[index]) equal = false;
+        index++;
+    }
+    return equal;
+}
+
 long int pow(int b, int e) {
     long int r = 1;
     for (int i = 0; i < e; i++) {
