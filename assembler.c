@@ -12,6 +12,7 @@ typedef struct A_instruction {
 } A_instruction;
 
 typedef struct C_instruction {
+    char a;
     char dest[MAX_C_LENGTH+1];
     char comp[MAX_C_LENGTH+1];
     char jmp[MAX_C_LENGTH+1];
@@ -127,12 +128,18 @@ C_instruction *parse_C_instruction(char instruction[]) {
         }
     }
 
+    // Se trovo `M` in c->comp --> c->a = 1, altrimenti c->a = 0
+    if (find_character(c->comp, 'M') != -1)
+        c->a = 1;
+    else
+        c->a = 0;
+
     return c;
 }
 
 void convert_C_instruction(char sbin[], C_instruction *c) {
-    // TODO
-    printf("%s\t%s\t%s\n", c->dest, c->comp, c->jmp);
+    
+    printf("%d\t%s\t%s\t%s\n", c->a, c->dest, c->comp, c->jmp);
 }
 
 void assemble(FILE *fin, char fname[]) {

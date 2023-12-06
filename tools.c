@@ -49,9 +49,9 @@ int find_character(char a[], char c) {
     
     while (a[index] != '\0' && !found) {
         if (a[index] == c) found = true;
-        index++;
+        else index++;
     }
 
-    if (found) return index-1;
+    if (found) return index;
     else return -1;
 }
