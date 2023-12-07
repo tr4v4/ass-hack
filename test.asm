@@ -5,13 +5,9 @@
 
 // Computes R0 = 2 + 3
 
-        @2
-  D=A
+@2
+D=A
 @3
-                 D=D+A
+D=D+A
 @0
-
-
-
-    M=D
-AMD=D+M;JMP
+M=D

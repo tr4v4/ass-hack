@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     FILE *fin = fopen(argv[1], "r");
 
     // Separazione nome del file da estensione
-    char fname[MAX_FNAME_LENGTH];
+    char fname[MAX_FNAME_LENGTH + 1];
     strncpy(fname, argv[1], strlen(argv[1]) - 4);
 
     // Assemblatore

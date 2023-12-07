@@ -109,7 +109,6 @@ C_instruction *parse_C_instruction(char instruction[]) {
 
     int eq_index = find_character(instruction, '=');
     int sc_index = find_character(instruction, ';');
-
     // Se non è stato trovato né '=' né ';' --> errore
     if (eq_index == -1 && sc_index == -1) return NULL;
 
@@ -125,14 +124,14 @@ C_instruction *parse_C_instruction(char instruction[]) {
             c->jmp[0] = '\0';
         }
     } else {
-        strncpy(c->dest, instruction, sc_index);
+        strncpy(c->comp, instruction, sc_index);
         if (sc_index != -1) {
             strncpy_range(c->jmp, instruction, sc_index + 1,
                           strlen(instruction));
         } else {
             c->jmp[0] = '\0';
         }
-        c->comp[0] = '\0';
+        c->dest[0] = '\0';
     }
 
     // Se trovo `M` in c->comp --> c->a = 1, altrimenti c->a = 0
@@ -252,11 +251,12 @@ void assemble(FILE *fin, char fname[]) {
     FILE *fout = fopen(fname, "w");
 
     // Scorro ogni riga del file di input
-    while (!feof(fin)) {
-        char line[MAX_LINE_LENGTH + 1];
-        fgets(line, MAX_LINE_LENGTH, fin);
+    char line[MAX_LINE_LENGTH + 1];
+    while (fgets(line, MAX_LINE_LENGTH, fin)) {
+        line[MAX_LINE_LENGTH] = '\0';
 
-        if (line[0] != '\n') {
+        if (line[0] != '\n' &&
+            line[1] != '\n') {  // per differenza LF e CRLF tra Linux e Windows!
             char instruction[MAX_INSTRUCTION_LENGTH + 1];
 
             // Pulisco ogni riga non vuota
@@ -268,6 +268,7 @@ void assemble(FILE *fin, char fname[]) {
 
             // Considero solo A-instruction e C-instruction
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
+
             if (type == 1) {
                 A_instruction *a_in = parse_A_instruction(instruction);
                 // TODO: inserire controllo errore valore non valido (a_in =
@@ -275,14 +276,15 @@ void assemble(FILE *fin, char fname[]) {
                 convert_A_instruction(binary_instruction, a_in);
             } else if (type == 2) {
                 C_instruction *c_in = parse_C_instruction(instruction);
-                // TODO: inserire controllo errore valore non valido (c_in =
-                // NULL)
+                // TODO: inserire controllo errore valore non valido
+                // (c_in = NULL)
                 convert_C_instruction(binary_instruction, c_in);
                 // TODO: inserire controllo istruzione non valida
                 // (convert_C_instruction --> false)
             }
 
             if (type == 1 || type == 2) {
+                // printf("%s\n", binary_instruction);
                 // Scrivo l'istruzione in binario nel file di output
                 fputs(binary_instruction, fout);
                 fputs("\n", fout);
