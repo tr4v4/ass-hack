@@ -22,10 +22,19 @@ void strncpy_range(char dest[], char src[], int min_index, int max_index) {
     dest[index] = '\0';
 }
 
-bool strncmp(char a[], char b[], int length) {
+void strncpy_dest_range(char dest[], char src[], int min_index, int max_index) {
+    int index = 0;
+    for (min_index; min_index < max_index; min_index++) {
+        dest[min_index] = src[index];
+        index++;
+    }
+}
+
+bool strncmp(char a[], char b[]) {
+    if (strlen(a) != strlen(b)) return false;
     bool equal = true;
     int index = 0;
-    while (index < length && equal) {
+    while (index < strlen(a) && equal) {
         if (a[index] != b[index]) equal = false;
         index++;
     }
