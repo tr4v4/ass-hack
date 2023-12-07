@@ -1,4 +1,5 @@
 #include "assembler.h"
+
 #include "tools.h"
 
 const int MAX_LINE_LENGTH = 100;
@@ -8,14 +9,14 @@ const int MAX_C_LENGTH = 3;
 const int BINARY_INSTRUCTION_LENGTH = 16;
 
 typedef struct A_instruction {
-    char value[MAX_VALUE_LENGTH+1];
+    char value[MAX_VALUE_LENGTH + 1];
 } A_instruction;
 
 typedef struct C_instruction {
     char a;
-    char dest[MAX_C_LENGTH+1];
-    char comp[MAX_C_LENGTH+1];
-    char jmp[MAX_C_LENGTH+1];
+    char dest[MAX_C_LENGTH + 1];
+    char comp[MAX_C_LENGTH + 1];
+    char jmp[MAX_C_LENGTH + 1];
 } C_instruction;
 
 void clear_line(char line[], char instruction[]) {
@@ -106,7 +107,7 @@ void convert_A_instruction(char sbin[], A_instruction *a) {
 
 C_instruction *parse_C_instruction(char instruction[]) {
     C_instruction *c = (C_instruction *)malloc(sizeof(C_instruction));
-    
+
     int eq_index = find_character(instruction, '=');
     int sc_index = find_character(instruction, ';');
 
@@ -116,16 +117,19 @@ C_instruction *parse_C_instruction(char instruction[]) {
     if (eq_index != -1) {
         strncpy(c->dest, instruction, eq_index);
         if (sc_index != -1) {
-            strncpy_range(c->comp, instruction, eq_index+1, sc_index);
-            strncpy_range(c->jmp, instruction, sc_index+1, strlen(instruction));
+            strncpy_range(c->comp, instruction, eq_index + 1, sc_index);
+            strncpy_range(c->jmp, instruction, sc_index + 1,
+                          strlen(instruction));
         } else {
-            strncpy_range(c->comp, instruction, eq_index+1, strlen(instruction));
+            strncpy_range(c->comp, instruction, eq_index + 1,
+                          strlen(instruction));
             c->jmp[0] = '\0';
         }
     } else {
         strncpy(c->dest, instruction, sc_index);
         if (sc_index != -1) {
-            strncpy_range(c->jmp, instruction, sc_index+1, strlen(instruction));
+            strncpy_range(c->jmp, instruction, sc_index + 1,
+                          strlen(instruction));
         } else {
             c->jmp[0] = '\0';
         }
@@ -133,8 +137,10 @@ C_instruction *parse_C_instruction(char instruction[]) {
     }
 
     // Se trovo `M` in c->comp --> c->a = 1, altrimenti c->a = 0
-    if (find_character(c->comp, 'M') != -1) c->a = '1';
-    else c->a = '0';
+    if (find_character(c->comp, 'M') != -1)
+        c->a = '1';
+    else
+        c->a = '0';
 
     return c;
 }
@@ -187,12 +193,18 @@ void convert_C_instruction(char sbin[], C_instruction *c) {
     }
 
     // Analizzo c->dest
-    if (find_character(c->dest, 'M') != -1) sbin[12] = '1';
-    else sbin[12] = '0';
-    if (find_character(c->dest, 'D') != -1) sbin[11] = '1';
-    else sbin[11] = '0';
-    if (find_character(c->dest, 'A') != -1) sbin[10] = '1';
-    else sbin[10] = '0';
+    if (find_character(c->dest, 'M') != -1)
+        sbin[12] = '1';
+    else
+        sbin[12] = '0';
+    if (find_character(c->dest, 'D') != -1)
+        sbin[11] = '1';
+    else
+        sbin[11] = '0';
+    if (find_character(c->dest, 'A') != -1)
+        sbin[10] = '1';
+    else
+        sbin[10] = '0';
 
     // Setto il quarto bit a c->a
     sbin[3] = c->a;
@@ -229,11 +241,13 @@ void assemble(FILE *fin, char fname[]) {
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
             if (type == 1) {
                 A_instruction *a_in = parse_A_instruction(instruction);
-                // TODO: inserire controllo errore valore non valido (a_in = NULL)
+                // TODO: inserire controllo errore valore non valido (a_in =
+                // NULL)
                 convert_A_instruction(binary_instruction, a_in);
             } else if (type == 2) {
                 C_instruction *c_in = parse_C_instruction(instruction);
-                // TODO: inserire controllo errore valore non valido (c_in = NULL)
+                // TODO: inserire controllo errore valore non valido (c_in =
+                // NULL)
                 convert_C_instruction(binary_instruction, c_in);
             }
 

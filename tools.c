@@ -9,8 +9,7 @@ int strlen(char str[]) {
 void strncpy(char dest[], char src[], int max_index) {
     // Precondition: max_index < strlen(src)
     int index;
-    for (index=0; index<max_index; index++)
-        dest[index] = src[index];
+    for (index = 0; index < max_index; index++) dest[index] = src[index];
     dest[index] = '\0';
 }
 
@@ -56,12 +55,16 @@ long int dec_to_bin(int n) {
 int find_character(char a[], char c) {
     int index = 0;
     bool found = false;
-    
+
     while (a[index] != '\0' && !found) {
-        if (a[index] == c) found = true;
-        else index++;
+        if (a[index] == c)
+            found = true;
+        else
+            index++;
     }
 
-    if (found) return index;
-    else return -1;
+    if (found)
+        return index;
+    else
+        return -1;
 }
