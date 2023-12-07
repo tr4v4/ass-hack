@@ -27,7 +27,7 @@ void clear_line(char line[], char instruction[]) {
     while (line[line_index] != '\0' &&
            instruction_index < MAX_INSTRUCTION_LENGTH) {
         if (line[line_index] != ' ' && line[line_index] != '\t' &&
-            line[line_index] != '\n') {
+            line[line_index] != '\n' && line[line_index] != '\r') {
             instruction[instruction_index] = line[line_index];
             instruction_index++;
         }
@@ -255,12 +255,13 @@ void assemble(FILE *fin, char fname[]) {
     while (fgets(line, MAX_LINE_LENGTH, fin)) {
         line[MAX_LINE_LENGTH] = '\0';
 
-        if (line[0] != '\n' &&
-            line[1] != '\n') {  // per differenza LF e CRLF tra Linux e Windows!
+        if (line[0] != '\n' && (line[0] != '\r' && line[1] != '\n')) {
             char instruction[MAX_INSTRUCTION_LENGTH + 1];
 
             // Pulisco ogni riga non vuota
             clear_line(line, instruction);
+
+            printf("%d\n", strlen(instruction));
 
             // Identifico ogni istruzione (commento, A-instruction,
             // C-instruction)
