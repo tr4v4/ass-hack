@@ -1,1 +1,5 @@
 a.out
+.vscode
+.clang-format
+*.hack
+*.o
