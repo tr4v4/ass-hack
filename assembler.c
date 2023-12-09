@@ -62,7 +62,7 @@ void add_n_zeros(char src[], char dest[], int n) {
     dest[dest_index] = '\0';
 }
 
-A_instruction *parse_A_instruction(char instruction[]) {
+A_instruction *parse_A_instruction(char instruction[], symtable **st, int &next_value) {
     A_instruction *a = (A_instruction *)malloc(sizeof(A_instruction));
 
     // Elimina la chiocciola (primo carattere) dall'istruzione
@@ -74,8 +74,21 @@ A_instruction *parse_A_instruction(char instruction[]) {
     }
     instruction_no_at[index_no_at] = '\0';
 
-    // Converti in intero la stringa
-    int dec = atoi(instruction_no_at);
+    // Identifico se si tratta di un numero o di una etichetta
+    int dec;
+    if (is_number(instruction_no_at)) {
+        // Converti in intero la stringa
+        dec = atoi(instruction_no_at);
+    } else {
+        int val = search(*st, instruction_no_at);
+        if (val != -1) {
+            dec = val;
+        } else {
+            *st = insert(*st, instruction_no_at, next_value);
+            dec = next_value;
+            next_value++;
+        }
+    }
 
     // Attenzione: il numero non può essere maggiore di (2^15) - 1
     if (dec > 32767)
@@ -288,6 +301,7 @@ symtable *handle_symbol_table(FILE *fin, symtable *st, bool error) {
 bool handle_instructions(FILE *fin, FILE *fout, symtable *st) {
     // Scorro ogni riga del file di input
     bool error = false;
+    int next_value = 16;
     char line[MAX_LINE_LENGTH + 1];
     while (fgets(line, MAX_LINE_LENGTH, fin) && !error) {
         line[MAX_LINE_LENGTH] = '\0';
@@ -308,7 +322,7 @@ bool handle_instructions(FILE *fin, FILE *fout, symtable *st) {
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
 
             if (type == 1) {
-                A_instruction *a_in = parse_A_instruction(instruction);
+                A_instruction *a_in = parse_A_instruction(instruction, &st, next_value);
                 if (a_in == NULL) {
                     printf("%s %s\n", "Errore in:", instruction);
                     error = true;

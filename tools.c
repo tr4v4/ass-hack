@@ -77,3 +77,13 @@ int find_character(char a[], char c) {
     else
         return -1;
 }
+
+bool is_number(char a[]) {
+    bool number = true;
+    int index = 0;
+    while (a[index] != '\0' && number) {
+        if (a[index] < 48 || a[index] > 57) number = false;
+        else index++;
+    }
+    return number;
+}
