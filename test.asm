@@ -7,7 +7,9 @@
 
 @2
 D=M
+(ciao)
 @3
 D=D+A
+(comestai?)
 @0
 M=D

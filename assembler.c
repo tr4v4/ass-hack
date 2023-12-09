@@ -1,5 +1,5 @@
 #include "assembler.h"
-
+#include "symbol_table.h"
 #include "tools.h"
 
 const int MAX_LINE_LENGTH = 100;
@@ -41,6 +41,7 @@ void clear_line(char line[], char instruction[]) {
 int identify_instruction(char instruction[]) {
     if (instruction[0] == '/' && instruction[1] == '/') return 0;
     if (instruction[0] == '@') return 1;
+    if (instruction[0] == '(') return 3;
     return 2;
 }
 
@@ -246,11 +247,45 @@ bool convert_C_instruction(char sbin[], C_instruction *c) {
     return true;
 }
 
-void assemble(FILE *fin, char fname[]) {
-    // Apertura file di output
-    sprintf(fname, "%s.hack", fname);
-    FILE *fout = fopen(fname, "w");
+symtable *handle_symbol_table(FILE *fin, symtable *st, bool error) {
+    // Inizializza symbol table
+    st = init();
 
+    // Scorri ogni riga del file
+    int current_index = 0;
+    int num_labels = 0;
+    char line[MAX_LINE_LENGTH + 1];
+    while (fgets(line, MAX_LINE_LENGTH, fin) && !error) {
+        line[MAX_LINE_LENGTH] = '\0';
+
+        if (line[0] != '\n' && (line[0] != '\r' && line[1] != '\n')) {
+            char instruction[MAX_INSTRUCTION_LENGTH + 1];
+
+            // Pulisco ogni riga non vuota
+            clear_line(line, instruction);
+
+            if (identify_instruction(instruction) != 0) {
+                // Mi concentro solo su etichette
+                if (line[0] == '(' && find_character(instruction, ')') != -1) {
+                    // Parso l'etichetta per ottenere simbolo e valore
+                    char label[MAX_SYMBOL_LENGTH + 1];
+                    strncpy_range(label, instruction, 1, find_character(instruction, ')'));
+
+                    if (label[0] >= 48 && label[0] <= 57) error = true;
+                    else {
+                        // Inserisco la nuova etichetta nella symbol_table
+                        st = insert(st, label, current_index - num_labels);
+                        num_labels++;
+                    }
+                }
+                current_index++;
+            }
+        }
+    }
+    return st;
+}
+
+bool handle_instructions(FILE *fin, FILE *fout, symtable *st) {
     // Scorro ogni riga del file di input
     bool error = false;
     char line[MAX_LINE_LENGTH + 1];
@@ -266,7 +301,7 @@ void assemble(FILE *fin, char fname[]) {
             // printf("%d\n", strlen(instruction));
 
             // Identifico ogni istruzione (commento, A-instruction,
-            // C-instruction)
+            // C-instruction o simbolo)
             int type = identify_instruction(instruction);
 
             // Considero solo A-instruction e C-instruction
@@ -293,13 +328,34 @@ void assemble(FILE *fin, char fname[]) {
                 }
             }
 
-            if ((type == 1 || type == 2)) {
-                // printf("%s\n", binary_instruction);
+            if (type == 1 || type == 2) {
                 // Scrivo l'istruzione in binario nel file di output
                 fputs(binary_instruction, fout);
                 fputs("\n", fout);
             }
         }
+    }
+    return error;
+}
+
+void assemble(FILE *fin, char fname[]) {
+    // Apertura file di output
+    sprintf(fname, "%s.hack", fname);
+    FILE *fout = fopen(fname, "w");
+
+    bool error = false;
+    symtable *st = NULL;
+    st = handle_symbol_table(fin, st, error);
+
+    symtable *tmp = st;
+    while (tmp != NULL) {
+        printf("%s\t%d\n", tmp->symbol, tmp->value);
+        tmp = tmp->next;
+    }
+    
+    if (!error) {
+        rewind(fin);
+        error = handle_instructions(fin, fout, st);
     }
 
     // Chiusura file di output
