@@ -88,9 +88,13 @@ A_instruction *parse_A_instruction(char instruction[], symtable **st, int &next_
         if (val != -1) {
             dec = val;
         } else {
-            *st = insert(*st, instruction_no_at, next_value);
-            dec = next_value;
-            next_value++;
+            if (instruction_no_at[0] >= 48 && instruction_no_at[0] <= 57)
+                return NULL;
+            else {
+                *st = insert(*st, instruction_no_at, next_value);
+                dec = next_value;
+                next_value++;
+            }
         }
     }
 
@@ -292,7 +296,10 @@ symtable *handle_symbol_table(FILE *fin, symtable *st, bool &error) {
                     char label[MAX_SYMBOL_LENGTH + 1];
                     strncpy_range(label, instruction, 1, find_character(instruction, ')'));
 
-                    if (label[0] >= 48 && label[0] <= 57) error = true;
+                    if (label[0] >= 48 && label[0] <= 57) {
+                        printf("Errore in: %s\n", instruction);
+                        error = true;
+                    }
                     else {
                         // Inserisco la nuova etichetta nella symbol_table
                         st = insert(st, label, current_index - num_labels);
@@ -331,7 +338,7 @@ symtable *handle_instructions(FILE *fin, FILE *fout, symtable *st, bool &error) 
             if (type == 1) {
                 A_instruction *a_in = parse_A_instruction(instruction, &st, next_value);
                 if (a_in == NULL) {
-                    printf("%s %s\n", "Errore in:", instruction);
+                    printf("Errore in: %s\n", instruction);
                     error = true;
                 } else {
                     convert_A_instruction(binary_instruction, a_in);
@@ -339,11 +346,11 @@ symtable *handle_instructions(FILE *fin, FILE *fout, symtable *st, bool &error) 
             } else if (type == 2) {
                 C_instruction *c_in = parse_C_instruction(instruction);
                 if (c_in == NULL) {
-                    printf("%s %s\n", "Errore in:", instruction);
+                    printf("Errore in: %s\n", instruction);
                     error = true;
                 } else {
                     if (!convert_C_instruction(binary_instruction, c_in)) {
-                        printf("%s %s\n", "Errore in:", instruction);
+                        printf("Errore in: %s\n", instruction);
                         error = true;
                     }
                 }
@@ -371,12 +378,6 @@ void assemble(FILE *fin, char fname[]) {
     if (!error) {
         rewind(fin);
         st = handle_instructions(fin, fout, st, error);
-    }
-
-    symtable *tmp = st;
-    while (tmp != NULL) {
-        printf("%s\t%d\n", tmp->symbol, tmp->value);
-        tmp = tmp->next;
     }
 
     // Chiusura file di output

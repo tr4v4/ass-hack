@@ -5,7 +5,7 @@
 
 // Computes R0 = 2 + 3
 
-@comestai?
+@1comestai?
 D=M
 (ciao)
 @3
