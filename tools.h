@@ -10,3 +10,4 @@ bool strncmp(char a[], char b[]);
 long int pow(int b, int e);
 long int dec_to_bin(int n);
 int find_character(char a[], char c);
+bool is_number(char a[]);

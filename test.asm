@@ -5,9 +5,11 @@
 
 // Computes R0 = 2 + 3
 
-@2
+@comestai?
 D=M
+(ciao)
 @3
 D=D+A
+(comestai?)
 @0
 M=D

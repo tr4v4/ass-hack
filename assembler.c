@@ -1,9 +1,9 @@
 #include "assembler.h"
-
+#include "symbol_table.h"
 #include "tools.h"
 
 const int MAX_LINE_LENGTH = 100;
-const int MAX_INSTRUCTION_LENGTH = 11;
+const int MAX_INSTRUCTION_LENGTH = 11 + MAX_SYMBOL_LENGTH;
 const int MAX_VALUE_LENGTH = 15;
 const int MAX_C_LENGTH = 3;
 const int BINARY_INSTRUCTION_LENGTH = 16;
@@ -41,6 +41,7 @@ void clear_line(char line[], char instruction[]) {
 int identify_instruction(char instruction[]) {
     if (instruction[0] == '/' && instruction[1] == '/') return 0;
     if (instruction[0] == '@') return 1;
+    if (instruction[0] == '(') return 3;
     return 2;
 }
 
@@ -61,7 +62,7 @@ void add_n_zeros(char src[], char dest[], int n) {
     dest[dest_index] = '\0';
 }
 
-A_instruction *parse_A_instruction(char instruction[]) {
+A_instruction *parse_A_instruction(char instruction[], symtable **st, int &next_value) {
     A_instruction *a = (A_instruction *)malloc(sizeof(A_instruction));
 
     // Elimina la chiocciola (primo carattere) dall'istruzione
@@ -73,8 +74,25 @@ A_instruction *parse_A_instruction(char instruction[]) {
     }
     instruction_no_at[index_no_at] = '\0';
 
-    // Converti in intero la stringa
-    int dec = atoi(instruction_no_at);
+    // Elimino eventuali commenti inline
+    int comment_index = find_character(instruction_no_at, '/');
+    if (comment_index != -1) instruction_no_at[comment_index] = '\0';
+
+    // Identifico se si tratta di un numero o di una etichetta
+    int dec;
+    if (is_number(instruction_no_at)) {
+        // Converti in intero la stringa
+        dec = atoi(instruction_no_at);
+    } else {
+        int val = search(*st, instruction_no_at);
+        if (val != -1) {
+            dec = val;
+        } else {
+            *st = insert(*st, instruction_no_at, next_value);
+            dec = next_value;
+            next_value++;
+        }
+    }
 
     // Attenzione: il numero non può essere maggiore di (2^15) - 1
     if (dec > 32767)
@@ -106,6 +124,10 @@ void convert_A_instruction(char sbin[], A_instruction *a) {
 
 C_instruction *parse_C_instruction(char instruction[]) {
     C_instruction *c = (C_instruction *)malloc(sizeof(C_instruction));
+
+    // Elimino eventuali commenti inline
+    int comment_index = find_character(instruction, '/');
+    if (comment_index != -1) instruction[comment_index] = '\0';
 
     int eq_index = find_character(instruction, '=');
     int sc_index = find_character(instruction, ';');
@@ -246,13 +268,47 @@ bool convert_C_instruction(char sbin[], C_instruction *c) {
     return true;
 }
 
-void assemble(FILE *fin, char fname[]) {
-    // Apertura file di output
-    sprintf(fname, "%s.hack", fname);
-    FILE *fout = fopen(fname, "w");
+symtable *handle_symbol_table(FILE *fin, symtable *st, bool &error) {
+    // Inizializza symbol table
+    st = init();
 
+    // Scorri ogni riga del file
+    int current_index = 0;
+    int num_labels = 0;
+    char line[MAX_LINE_LENGTH + 1];
+    while (fgets(line, MAX_LINE_LENGTH, fin) && !error) {
+        line[MAX_LINE_LENGTH] = '\0';
+
+        if (line[0] != '\n' && (line[0] != '\r' && line[1] != '\n')) {
+            char instruction[MAX_INSTRUCTION_LENGTH + 1];
+
+            // Pulisco ogni riga non vuota
+            clear_line(line, instruction);
+
+            if (identify_instruction(instruction) != 0) {
+                // Mi concentro solo su etichette
+                if (line[0] == '(' && find_character(instruction, ')') != -1) {
+                    // Parso l'etichetta per ottenere simbolo e valore
+                    char label[MAX_SYMBOL_LENGTH + 1];
+                    strncpy_range(label, instruction, 1, find_character(instruction, ')'));
+
+                    if (label[0] >= 48 && label[0] <= 57) error = true;
+                    else {
+                        // Inserisco la nuova etichetta nella symbol_table
+                        st = insert(st, label, current_index - num_labels);
+                        num_labels++;
+                    }
+                }
+                current_index++;
+            }
+        }
+    }
+    return st;
+}
+
+symtable *handle_instructions(FILE *fin, FILE *fout, symtable *st, bool &error) {
     // Scorro ogni riga del file di input
-    bool error = false;
+    int next_value = 16;
     char line[MAX_LINE_LENGTH + 1];
     while (fgets(line, MAX_LINE_LENGTH, fin) && !error) {
         line[MAX_LINE_LENGTH] = '\0';
@@ -266,14 +322,14 @@ void assemble(FILE *fin, char fname[]) {
             // printf("%d\n", strlen(instruction));
 
             // Identifico ogni istruzione (commento, A-instruction,
-            // C-instruction)
+            // C-instruction o simbolo)
             int type = identify_instruction(instruction);
 
             // Considero solo A-instruction e C-instruction
             char binary_instruction[BINARY_INSTRUCTION_LENGTH + 1];
 
             if (type == 1) {
-                A_instruction *a_in = parse_A_instruction(instruction);
+                A_instruction *a_in = parse_A_instruction(instruction, &st, next_value);
                 if (a_in == NULL) {
                     printf("%s %s\n", "Errore in:", instruction);
                     error = true;
@@ -293,13 +349,34 @@ void assemble(FILE *fin, char fname[]) {
                 }
             }
 
-            if ((type == 1 || type == 2)) {
-                // printf("%s\n", binary_instruction);
+            if (type == 1 || type == 2) {
                 // Scrivo l'istruzione in binario nel file di output
                 fputs(binary_instruction, fout);
                 fputs("\n", fout);
             }
         }
+    }
+    return st;
+}
+
+void assemble(FILE *fin, char fname[]) {
+    // Apertura file di output
+    sprintf(fname, "%s.hack", fname);
+    FILE *fout = fopen(fname, "w");
+
+    bool error = false;
+    symtable *st = NULL;
+    st = handle_symbol_table(fin, st, error);
+    
+    if (!error) {
+        rewind(fin);
+        st = handle_instructions(fin, fout, st, error);
+    }
+
+    symtable *tmp = st;
+    while (tmp != NULL) {
+        printf("%s\t%d\n", tmp->symbol, tmp->value);
+        tmp = tmp->next;
     }
 
     // Chiusura file di output
