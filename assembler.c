@@ -3,7 +3,7 @@
 #include "tools.h"
 
 const int MAX_LINE_LENGTH = 100;
-const int MAX_INSTRUCTION_LENGTH = 11;
+const int MAX_INSTRUCTION_LENGTH = 11 + MAX_SYMBOL_LENGTH;
 const int MAX_VALUE_LENGTH = 15;
 const int MAX_C_LENGTH = 3;
 const int BINARY_INSTRUCTION_LENGTH = 16;
@@ -74,6 +74,10 @@ A_instruction *parse_A_instruction(char instruction[], symtable **st, int &next_
     }
     instruction_no_at[index_no_at] = '\0';
 
+    // Elimino eventuali commenti inline
+    int comment_index = find_character(instruction_no_at, '/');
+    if (comment_index != -1) instruction_no_at[comment_index] = '\0';
+
     // Identifico se si tratta di un numero o di una etichetta
     int dec;
     if (is_number(instruction_no_at)) {
@@ -120,6 +124,10 @@ void convert_A_instruction(char sbin[], A_instruction *a) {
 
 C_instruction *parse_C_instruction(char instruction[]) {
     C_instruction *c = (C_instruction *)malloc(sizeof(C_instruction));
+
+    // Elimino eventuali commenti inline
+    int comment_index = find_character(instruction, '/');
+    if (comment_index != -1) instruction[comment_index] = '\0';
 
     int eq_index = find_character(instruction, '=');
     int sc_index = find_character(instruction, ';');
@@ -260,7 +268,7 @@ bool convert_C_instruction(char sbin[], C_instruction *c) {
     return true;
 }
 
-symtable *handle_symbol_table(FILE *fin, symtable *st, bool error) {
+symtable *handle_symbol_table(FILE *fin, symtable *st, bool &error) {
     // Inizializza symbol table
     st = init();
 
@@ -298,9 +306,8 @@ symtable *handle_symbol_table(FILE *fin, symtable *st, bool error) {
     return st;
 }
 
-bool handle_instructions(FILE *fin, FILE *fout, symtable *st) {
+symtable *handle_instructions(FILE *fin, FILE *fout, symtable *st, bool &error) {
     // Scorro ogni riga del file di input
-    bool error = false;
     int next_value = 16;
     char line[MAX_LINE_LENGTH + 1];
     while (fgets(line, MAX_LINE_LENGTH, fin) && !error) {
@@ -349,7 +356,7 @@ bool handle_instructions(FILE *fin, FILE *fout, symtable *st) {
             }
         }
     }
-    return error;
+    return st;
 }
 
 void assemble(FILE *fin, char fname[]) {
@@ -360,16 +367,16 @@ void assemble(FILE *fin, char fname[]) {
     bool error = false;
     symtable *st = NULL;
     st = handle_symbol_table(fin, st, error);
+    
+    if (!error) {
+        rewind(fin);
+        st = handle_instructions(fin, fout, st, error);
+    }
 
     symtable *tmp = st;
     while (tmp != NULL) {
         printf("%s\t%d\n", tmp->symbol, tmp->value);
         tmp = tmp->next;
-    }
-    
-    if (!error) {
-        rewind(fin);
-        error = handle_instructions(fin, fout, st);
     }
 
     // Chiusura file di output

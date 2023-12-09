@@ -1,4 +1,4 @@
-const int MAX_SYMBOL_LENGTH = 20;
+const int MAX_SYMBOL_LENGTH = 40;
 
 typedef struct symtable {
     char symbol[MAX_SYMBOL_LENGTH];
