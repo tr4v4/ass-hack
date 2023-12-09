@@ -109,6 +109,7 @@ C_instruction *parse_C_instruction(char instruction[]) {
 
     int eq_index = find_character(instruction, '=');
     int sc_index = find_character(instruction, ';');
+
     // Se non è stato trovato né '=' né ';' --> errore
     if (eq_index == -1 && sc_index == -1) return NULL;
 
@@ -145,71 +146,71 @@ C_instruction *parse_C_instruction(char instruction[]) {
 
 bool convert_C_instruction(char sbin[], C_instruction *c) {
     // Analizzo c->comp
-    if (strncmp(c->comp, "0")) {
-        strncpy_dest_range(sbin, "101010", 4, 10);
-    } else if (strncmp(c->comp, "1")) {
-        strncpy_dest_range(sbin, "111111", 4, 10);
-    } else if (strncmp(c->comp, "-1")) {
-        strncpy_dest_range(sbin, "111010", 4, 10);
-    } else if (strncmp(c->comp, "D")) {
-        strncpy_dest_range(sbin, "001100", 4, 10);
-    } else if (strncmp(c->comp, "A") || strncmp(c->comp, "M")) {
-        strncpy_dest_range(sbin, "110000", 4, 10);
-    } else if (strncmp(c->comp, "!D")) {
-        strncpy_dest_range(sbin, "001101", 4, 10);
-    } else if (strncmp(c->comp, "!A") || strncmp(c->comp, "!M")) {
-        strncpy_dest_range(sbin, "110001", 4, 10);
-    } else if (strncmp(c->comp, "-D")) {
-        strncpy_dest_range(sbin, "001111", 4, 10);
-    } else if (strncmp(c->comp, "-A") || strncmp(c->comp, "-M")) {
-        strncpy_dest_range(sbin, "110011", 4, 10);
-    } else if (strncmp(c->comp, "D+1")) {
-        strncpy_dest_range(sbin, "011111", 4, 10);
-    } else if (strncmp(c->comp, "A+1") || strncmp(c->comp, "M+1")) {
-        strncpy_dest_range(sbin, "110111", 4, 10);
-    } else if (strncmp(c->comp, "D-1")) {
-        strncpy_dest_range(sbin, "001110", 4, 10);
-    } else if (strncmp(c->comp, "A-1") || strncmp(c->comp, "M-1")) {
-        strncpy_dest_range(sbin, "110010", 4, 10);
-    } else if (strncmp(c->comp, "D+A") || strncmp(c->comp, "D+M")) {
-        strncpy_dest_range(sbin, "000010", 4, 10);
-    } else if (strncmp(c->comp, "D-A") || strncmp(c->comp, "D-M")) {
-        strncpy_dest_range(sbin, "010011", 4, 10);
-    } else if (strncmp(c->comp, "A-D") || strncmp(c->comp, "M-D")) {
-        strncpy_dest_range(sbin, "000111", 4, 10);
-    } else if (strncmp(c->comp, "D&A") || strncmp(c->comp, "D&M")) {
-        strncpy_dest_range(sbin, "000000", 4, 10);
-    } else if (strncmp(c->comp, "D|A") || strncmp(c->comp, "D|M")) {
-        strncpy_dest_range(sbin, "010101", 4, 10);
+    if (strncmp(c->comp, (char *)"0")) {
+        strncpy_dest_range(sbin, (char *)"101010", 4, 10);
+    } else if (strncmp(c->comp, (char *)"1")) {
+        strncpy_dest_range(sbin, (char *)"111111", 4, 10);
+    } else if (strncmp(c->comp, (char *)"-1")) {
+        strncpy_dest_range(sbin, (char *)"111010", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D")) {
+        strncpy_dest_range(sbin, (char *)"001100", 4, 10);
+    } else if (strncmp(c->comp, (char *)"A") || strncmp(c->comp, (char *)"M")) {
+        strncpy_dest_range(sbin, (char *)"110000", 4, 10);
+    } else if (strncmp(c->comp, (char *)"!D")) {
+        strncpy_dest_range(sbin, (char *)"001101", 4, 10);
+    } else if (strncmp(c->comp, (char *)"!A") || strncmp(c->comp, (char *)"!M")) {
+        strncpy_dest_range(sbin, (char *)"110001", 4, 10);
+    } else if (strncmp(c->comp, (char *)"-D")) {
+        strncpy_dest_range(sbin, (char *)"001111", 4, 10);
+    } else if (strncmp(c->comp, (char *)"-A") || strncmp(c->comp, (char *)"-M")) {
+        strncpy_dest_range(sbin, (char *)"110011", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D+1")) {
+        strncpy_dest_range(sbin, (char *)"011111", 4, 10);
+    } else if (strncmp(c->comp, (char *)"A+1") || strncmp(c->comp, (char *)"M+1")) {
+        strncpy_dest_range(sbin, (char *)"110111", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D-1")) {
+        strncpy_dest_range(sbin, (char *)"001110", 4, 10);
+    } else if (strncmp(c->comp, (char *)"A-1") || strncmp(c->comp, (char *)"M-1")) {
+        strncpy_dest_range(sbin, (char *)"110010", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D+A") || strncmp(c->comp, (char *)"D+M")) {
+        strncpy_dest_range(sbin, (char *)"000010", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D-A") || strncmp(c->comp, (char *)"D-M")) {
+        strncpy_dest_range(sbin, (char *)"010011", 4, 10);
+    } else if (strncmp(c->comp, (char *)"A-D") || strncmp(c->comp, (char *)"M-D")) {
+        strncpy_dest_range(sbin, (char *)"000111", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D&A") || strncmp(c->comp, (char *)"D&M")) {
+        strncpy_dest_range(sbin, (char *)"000000", 4, 10);
+    } else if (strncmp(c->comp, (char *)"D|A") || strncmp(c->comp, (char *)"D|M")) {
+        strncpy_dest_range(sbin, (char *)"010101", 4, 10);
     } else
         return false;
 
     // Analizzo c->jmp
-    if (strncmp(c->jmp, "JGT")) {
+    if (strncmp(c->jmp, (char *)"JGT")) {
         sbin[13] = '0';
         sbin[14] = '0';
         sbin[15] = '1';
-    } else if (strncmp(c->jmp, "JEQ")) {
+    } else if (strncmp(c->jmp, (char *)"JEQ")) {
         sbin[13] = '0';
         sbin[14] = '1';
         sbin[15] = '0';
-    } else if (strncmp(c->jmp, "JGE")) {
+    } else if (strncmp(c->jmp, (char *)"JGE")) {
         sbin[13] = '0';
         sbin[14] = '1';
         sbin[15] = '1';
-    } else if (strncmp(c->jmp, "JLT")) {
+    } else if (strncmp(c->jmp, (char *)"JLT")) {
         sbin[13] = '1';
         sbin[14] = '0';
         sbin[15] = '0';
-    } else if (strncmp(c->jmp, "JNE")) {
+    } else if (strncmp(c->jmp, (char *)"JNE")) {
         sbin[13] = '1';
         sbin[14] = '0';
         sbin[15] = '1';
-    } else if (strncmp(c->jmp, "JLE")) {
+    } else if (strncmp(c->jmp, (char *)"JLE")) {
         sbin[13] = '1';
         sbin[14] = '1';
         sbin[15] = '0';
-    } else if (strncmp(c->jmp, "JMP")) {
+    } else if (strncmp(c->jmp, (char *)"JMP")) {
         sbin[13] = '1';
         sbin[14] = '1';
         sbin[15] = '1';
@@ -251,8 +252,9 @@ void assemble(FILE *fin, char fname[]) {
     FILE *fout = fopen(fname, "w");
 
     // Scorro ogni riga del file di input
+    bool error = false;
     char line[MAX_LINE_LENGTH + 1];
-    while (fgets(line, MAX_LINE_LENGTH, fin)) {
+    while (fgets(line, MAX_LINE_LENGTH, fin) && !error) {
         line[MAX_LINE_LENGTH] = '\0';
 
         if (line[0] != '\n' && (line[0] != '\r' && line[1] != '\n')) {
@@ -261,7 +263,7 @@ void assemble(FILE *fin, char fname[]) {
             // Pulisco ogni riga non vuota
             clear_line(line, instruction);
 
-            printf("%d\n", strlen(instruction));
+            // printf("%d\n", strlen(instruction));
 
             // Identifico ogni istruzione (commento, A-instruction,
             // C-instruction)
@@ -272,19 +274,26 @@ void assemble(FILE *fin, char fname[]) {
 
             if (type == 1) {
                 A_instruction *a_in = parse_A_instruction(instruction);
-                // TODO: inserire controllo errore valore non valido (a_in =
-                // NULL)
-                convert_A_instruction(binary_instruction, a_in);
+                if (a_in == NULL) {
+                    printf("%s %s\n", "Errore in:", instruction);
+                    error = true;
+                } else {
+                    convert_A_instruction(binary_instruction, a_in);
+                }
             } else if (type == 2) {
                 C_instruction *c_in = parse_C_instruction(instruction);
-                // TODO: inserire controllo errore valore non valido
-                // (c_in = NULL)
-                convert_C_instruction(binary_instruction, c_in);
-                // TODO: inserire controllo istruzione non valida
-                // (convert_C_instruction --> false)
+                if (c_in == NULL) {
+                    printf("%s %s\n", "Errore in:", instruction);
+                    error = true;
+                } else {
+                    if (!convert_C_instruction(binary_instruction, c_in)) {
+                        printf("%s %s\n", "Errore in:", instruction);
+                        error = true;
+                    }
+                }
             }
 
-            if (type == 1 || type == 2) {
+            if ((type == 1 || type == 2)) {
                 // printf("%s\n", binary_instruction);
                 // Scrivo l'istruzione in binario nel file di output
                 fputs(binary_instruction, fout);
@@ -295,4 +304,7 @@ void assemble(FILE *fin, char fname[]) {
 
     // Chiusura file di output
     fclose(fout);
+
+    // Eventuale eliminazione se c'è stato un errore nell'assemblazione
+    if (error) remove(fname);
 }
